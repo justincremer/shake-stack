@@ -1,6 +1,7 @@
 use std::fmt;
 use std::time::Instant;
 
+#[derive(Debug, PartialEq)]
 pub struct Order<'a> {
     name: &'a str,
     item: &'a str,
@@ -8,6 +9,7 @@ pub struct Order<'a> {
     status: OrderStatus,
 }
 
+#[derive(Debug, PartialEq)]
 enum OrderStatus {
     Hot,
     Warm,
@@ -58,10 +60,19 @@ impl fmt::Display for Order<'_> {
 #[cfg(test)]
 mod tests {
     use super::Order;
+    use crate::store::OrderStatus;
+    use std::time::Duration;
 
     #[test]
-    fn it_works() {
-        let order = Order::new("justin", "vanilla milkshake");
-        println!("{}", order);
+    fn status_depreciated() {
+        let mut order = Order::new("justin", "vanilla milkshake");
+
+        assert_eq!(order.status, OrderStatus::Hot);
+        order.time = order.time - Duration::from_secs(6);
+        let _ = order.serve();
+        assert_eq!(order.status, OrderStatus::Warm);
+        order.time = order.time - Duration::from_secs(6);
+        let _ = order.serve();
+        assert_eq!(order.status, OrderStatus::Cold);
     }
 }
