@@ -30,9 +30,9 @@ impl<'a> Order<'a> {
 
     pub fn serve(&mut self) -> &Self {
         let duration = self.time.elapsed();
-        if duration.as_secs() > 10 {
+        if duration.as_millis() > 10 {
             self.status = OrderStatus::Cold;
-        } else if duration.as_secs() > 5 {
+        } else if duration.as_millis() > 5 {
             self.status = OrderStatus::Warm;
         }
 
@@ -44,10 +44,10 @@ impl fmt::Display for Order<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{} orderd a {}\nIt has been {}s and the food is {}.",
+            "{} orderd a {}\nIt has been {}m and the food is {}.",
             self.name,
             self.item,
-            self.time.elapsed().as_secs(),
+            self.time.elapsed().as_millis(),
             match self.status {
                 OrderStatus::Hot => "hot",
                 OrderStatus::Warm => "warm",
@@ -68,10 +68,10 @@ mod tests {
         let mut order = Order::new("justin", "vanilla milkshake");
 
         assert_eq!(order.status, OrderStatus::Hot);
-        order.time = order.time - Duration::from_secs(6);
+        order.time = order.time - Duration::from_millis(6);
         let _ = order.serve();
         assert_eq!(order.status, OrderStatus::Warm);
-        order.time = order.time - Duration::from_secs(6);
+        order.time = order.time - Duration::from_millis(6);
         let _ = order.serve();
         assert_eq!(order.status, OrderStatus::Cold);
     }
