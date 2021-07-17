@@ -1,7 +1,7 @@
 use std::fmt;
 use std::time::Instant;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Order<'a> {
     name: &'a str,
     item: &'a str,
@@ -9,11 +9,12 @@ pub struct Order<'a> {
     status: OrderStatus,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum OrderStatus {
     Hot,
     Warm,
     Cold,
+    Inedibile,
 }
 
 impl<'a> Order<'a> {
@@ -30,13 +31,21 @@ impl<'a> Order<'a> {
 
     pub fn serve(&mut self) -> &Self {
         let duration = self.time.elapsed();
-        if duration.as_millis() > 10 {
+        if duration.as_millis() > 20 {
+            self.status = OrderStatus::Inedibile;
+        } else if duration.as_millis() > 10 {
             self.status = OrderStatus::Cold;
         } else if duration.as_millis() > 5 {
             self.status = OrderStatus::Warm;
         }
 
         self
+    }
+}
+
+impl<'a> From<(&'a str, &'a str)> for Order<'a> {
+    fn from(i: (&'a str, &'a str)) -> Self {
+        Order::new(i.0, i.1)
     }
 }
 
@@ -52,6 +61,7 @@ impl fmt::Display for Order<'_> {
                 OrderStatus::Hot => "hot",
                 OrderStatus::Warm => "warm",
                 OrderStatus::Cold => "cold",
+                OrderStatus::Inedibile => "inedible",
             }
         )
     }
@@ -59,8 +69,7 @@ impl fmt::Display for Order<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::Order;
-    use crate::store::OrderStatus;
+    use super::{Order, OrderStatus};
     use std::time::Duration;
 
     #[test]
@@ -74,5 +83,8 @@ mod tests {
         order.time = order.time - Duration::from_millis(6);
         let _ = order.serve();
         assert_eq!(order.status, OrderStatus::Cold);
+        order.time = order.time - Duration::from_millis(10);
+        let _ = order.serve();
+        assert_eq!(order.status, OrderStatus::Inedibile);
     }
 }
