@@ -24,24 +24,26 @@ fn populate_queue<'a>(data: &mut Queue<Order<'a>>, input: &Vec<(&'a str, &'a str
     }
 }
 
-fn run_stack<'a>(data: &mut Stack<Order>) {
+fn run_stack<'a>(data: &mut Stack<Order>) -> String {
     let mut res = String::from("\nShake Stack:\n");
     while !data.is_empty() {
         sleep(550);
         res += format!("{}\n", data.pop().unwrap().serve()).as_str();
     }
 
-    println!("{}", res);
+    res
+
+    // println!("{}", res);
 }
 
-fn run_queue<'a>(data: &mut Queue<Order>) {
+fn run_queue<'a>(data: &mut Queue<Order>) -> String {
     let mut res = String::from("\nShake Queue:\n");
     while !data.is_empty() {
         sleep(550);
         res += format!("{}\n", data.pop().unwrap().serve()).as_str();
     }
 
-    println!("{}", res);
+    res
 }
 
 fn gen_data<'a>() -> (Stack<Order<'a>>, Queue<Order<'a>>) {
@@ -66,18 +68,24 @@ fn gen_data<'a>() -> (Stack<Order<'a>>, Queue<Order<'a>>) {
 }
 
 fn main() {
-    // use std::thread::spawn;
+    use std::sync::mpsc;
+    use std::thread::spawn;
 
     let (mut stack, mut queue) = gen_data();
+    let (s1, rx) = mpsc::channel::<String>();
+    let s2 = s1.clone();
 
-    // let mut handles = Vec::new();
-    // handles.push(spawn(move || run_stack(&mut stack)));
-    // handles.push(spawn(move || run_queue(&mut queue)));
+    spawn(move || s1.clone().send(run_stack(&mut stack)));
+    spawn(move || s2.clone().send(run_queue(&mut queue)));
+
+    for _ in 0..2 {
+        println!("{}", rx.recv().unwrap());
+    }
 
     // for h in handles.iter() {
     // h.join().unwrap();
     // }
 
-    run_stack(&mut stack);
-    run_queue(&mut queue);
+    // run_stack(&mut stack);
+    // run_queue(&mut queue);
 }
