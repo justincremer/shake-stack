@@ -81,11 +81,4 @@ fn main() {
     for _ in 0..2 {
         println!("{}", rx.recv().unwrap());
     }
-
-    // for h in handles.iter() {
-    // h.join().unwrap();
-    // }
-
-    // run_stack(&mut stack);
-    // run_queue(&mut queue);
 }
